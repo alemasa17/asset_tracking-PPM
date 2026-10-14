@@ -1,0 +1,12 @@
+{# Eredita lo scheletro di base.html #}
+{% extends "base.html" %}
+{% block title %}Accedi{% endblock %}
+{% block content %}
+  <h1>Accedi</h1>
+  <form method="post">
+    {% csrf_token %}
+    {# Django genera da solo i campi nome utente e password #}
+    {{ form.as_p }}
+    <button type="submit">Entra</button>
+  </form>
+{% endblock %}

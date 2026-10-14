@@ -56,7 +56,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], # cartella dei template del progetto
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,3 +129,10 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
+
+# Dove mandare chi non ha fatto login
+LOGIN_URL = "login"
+# Dove andare dopo un login riuscito
+LOGIN_REDIRECT_URL = "home"
+# Dove andare dopo il logout
+LOGOUT_REDIRECT_URL = "login"

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  {# Fa adattare la pagina allo schermo del telefono #}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Titolo della scheda: ogni pagina può cambiarlo #}
+  <title>{% block title %}Asset Tracking{% endblock %}</title>
+</head>
+<body>
+  <nav>
+    <a href="{% url 'home' %}">Home</a>
+    {# "user" è l'utente connesso, disponibile in ogni template #}
+    {% if user.is_authenticated %}
+      {# Voci di menu visibili solo con il ruolo giusto #}
+      {% if user.can_manage_inventory %}<a href="{% url 'manager_area' %}">Gestione</a>{% endif %}
+      {% if user.can_administer %}<a href="{% url 'admin_area' %}">Amministrazione</a>{% endif %}
+      {# Nome e ruolo di chi è connesso #}
+      <span>{{ user.username }} ({{ user.get_role_display }})</span>
+      {# Il logout richiede un modulo con pulsante, non un semplice link #}
+      <form method="post" action="{% url 'logout' %}" style="display:inline">
+        {# Codice di sicurezza obbligatorio in ogni modulo #}
+        {% csrf_token %}
+        <button type="submit">Esci</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Accedi</a>
+    {% endif %}
+  </nav>
+  <hr>
+  {# Qui ogni pagina inserisce il suo contenuto #}
+  {% block content %}{% endblock %}
+</body>
+</html>
