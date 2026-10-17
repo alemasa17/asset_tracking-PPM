@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Benvenuto, {{ user.username }}</h1>
-  <p>Il tuo ruolo: {{ user.get_role_display }}.</p>
+  <h1 class="h3">Benvenuto, {{ user.username }}</h1>
+  <p>Il tuo ruolo: <strong>{{ user.get_role_display }}</strong>.</p>
+  <a class="btn btn-primary" href="{% url 'asset_list' %}">Vai ai beni</a>
 {% endblock %}

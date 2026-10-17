@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ asset.name }}{% endblock %}
+{% block content %}
+  <a href="{% url 'asset_list' %}" class="text-decoration-none">&larr; Tutti i beni</a>
+
+  {# Scheda con i dati del bene #}
+  <div class="card mt-3 mb-4">
+    <div class="card-body">
+      <h1 class="h4">{{ asset.name }} {% include "assets/_status_badge.html" %}</h1>
+      <p class="text-muted mb-3">{{ asset.inventory_code }}</p>
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ asset.category }}</dd>
+        <dt class="col-sm-3">Luogo</dt><dd class="col-sm-9">{{ asset.location }}</dd>
+        <dt class="col-sm-3">Responsabile</dt><dd class="col-sm-9">{{ asset.holder|default:"—" }}</dd>
+        {# date formatta la data come giorno/mese/anno #}
+        <dt class="col-sm-3">Acquistato il</dt>
+        <dd class="col-sm-9">{{ asset.purchase_date|date:"d/m/Y"|default:"—" }}</dd>
+        <dt class="col-sm-3">Descrizione</dt>
+        <dd class="col-sm-9">{{ asset.description|default:"—" }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  {# Storico dei movimenti, dal più recente #}
+  <h2 class="h5">Storico</h2>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead class="table-light">
+        <tr><th>Data</th><th>Azione</th><th>Utente</th><th>Da</th><th>A</th><th>Nota</th></tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+          <tr>
+            <td>{{ m.timestamp|date:"d/m/Y H:i" }}</td>
+            <td>{{ m.get_action_display }}</td>
+            <td>{{ m.user }}</td>
+            <td>{{ m.from_location|default:"—" }}</td>
+            <td>{{ m.to_location|default:"—" }}</td>
+            <td>{{ m.note }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted">Nessun movimento registrato.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

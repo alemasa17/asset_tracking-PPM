@@ -10,3 +10,4 @@ class CustomUserAdmin(UserAdmin):
     list_display = ("username", "email", "role", "is_staff")
         # Mostra il ruolo anche nel modulo di creazione di un nuovo utente
     add_fieldsets = UserAdmin.add_fieldsets + (("Ruolo", {"fields": ("role",)}),)
+    

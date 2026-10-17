@@ -2,33 +2,52 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  {# Fa adattare la pagina allo schermo del telefono #}
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {# Titolo della scheda: ogni pagina può cambiarlo #}
   <title>{% block title %}Asset Tracking{% endblock %}</title>
+  {# Stili di Bootstrap, caricati da internet #}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <nav>
-    <a href="{% url 'home' %}">Home</a>
-    {# "user" è l'utente connesso, disponibile in ogni template #}
-    {% if user.is_authenticated %}
-      {# Voci di menu visibili solo con il ruolo giusto #}
-      {% if user.can_manage_inventory %}<a href="{% url 'manager_area' %}">Gestione</a>{% endif %}
-      {% if user.can_administer %}<a href="{% url 'admin_area' %}">Amministrazione</a>{% endif %}
-      {# Nome e ruolo di chi è connesso #}
-      <span>{{ user.username }} ({{ user.get_role_display }})</span>
-      {# Il logout richiede un modulo con pulsante, non un semplice link #}
-      <form method="post" action="{% url 'logout' %}" style="display:inline">
-        {# Codice di sicurezza obbligatorio in ogni modulo #}
-        {% csrf_token %}
-        <button type="submit">Esci</button>
-      </form>
-    {% else %}
-      <a href="{% url 'login' %}">Accedi</a>
-    {% endif %}
+  {# Barra in alto; su telefono il menu si chiude in un pulsante #}
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'home' %}">Asset Tracking</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="navbar-nav me-auto">
+          {% if user.is_authenticated %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'asset_list' %}">Beni</a></li>
+            {% if user.can_manage_inventory %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'manager_area' %}">Gestione</a></li>
+            {% endif %}
+            {% if user.can_administer %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'admin_area' %}">Amministrazione</a></li>
+            {% endif %}
+          {% endif %}
+        </ul>
+        {% if user.is_authenticated %}
+          <span class="navbar-text me-3">{{ user.username }} ({{ user.get_role_display }})</span>
+          <form method="post" action="{% url 'logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light btn-sm">Esci</button>
+          </form>
+        {% else %}
+          <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Accedi</a>
+        {% endif %}
+      </div>
+    </div>
   </nav>
-  <hr>
-  {# Qui ogni pagina inserisce il suo contenuto #}
-  {% block content %}{% endblock %}
+
+  {# Contenuto della pagina, centrato e con margini #}
+  <main class="container py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  {# Serve al pulsante del menu su telefono #}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
+

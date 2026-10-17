@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Beni{% endblock %}
+{% block content %}
+  <h1 class="h3 mb-3">Beni</h1>
+  {# table-responsive: la tabella scorre di lato sugli schermi piccoli #}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nome</th><th>Codice</th><th>Categoria</th>
+          <th>Luogo</th><th>Stato</th><th>Responsabile</th>
+        </tr>
+      </thead>
+      <tbody>
+        {# Ripete la riga per ogni bene passato dalla view #}
+        {% for asset in assets %}
+          <tr>
+            <td><a href="{% url 'asset_detail' asset.pk %}">{{ asset.name }}</a></td>
+            <td>{{ asset.inventory_code }}</td>
+            <td>{{ asset.category }}</td>
+            <td>{{ asset.location }}</td>
+            <td>{% include "assets/_status_badge.html" %}</td>
+            {# default mostra un trattino se il responsabile è vuoto #}
+            <td>{{ asset.holder|default:"—" }}</td>
+          </tr>
+        {# Se l'elenco è vuoto mostra questa riga #}
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted">Nessun bene presente.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

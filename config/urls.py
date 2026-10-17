@@ -8,4 +8,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Tutto il resto lo gestisce l'app accounts
     path("", include("accounts.urls")),
+    path("", include("assets.urls")),
 ]
+    

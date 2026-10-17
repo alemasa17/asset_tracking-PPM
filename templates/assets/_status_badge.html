@@ -1,0 +1,8 @@
+{# Mostra lo stato del bene come etichetta colorata #}
+{% if asset.status == "available" %}
+  <span class="badge text-bg-success">{{ asset.get_status_display }}</span>
+{% elif asset.status == "in_use" %}
+  <span class="badge text-bg-warning">{{ asset.get_status_display }}</span>
+{% else %}
+  <span class="badge text-bg-secondary">{{ asset.get_status_display }}</span>
+{% endif %}
