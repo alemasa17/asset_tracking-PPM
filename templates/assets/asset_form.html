@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+  <h1 class="h3 mb-4">{{ title }}</h1>
+  <form method="post" class="col-lg-6" novalidate>
+    {% csrf_token %}
+    {% include "assets/_form_fields.html" %}
+    <button type="submit" class="btn btn-primary">Salva</button>
+    {# Annulla torna alla scheda se si sta modificando, all'elenco se si sta creando #}
+    <a class="btn btn-outline-secondary" href="{% if asset %}{% url 'asset_detail' asset.pk %}{% else %}{% url 'asset_list' %}{% endif %}">Annulla</a>
+  </form>
+{% endblock %}

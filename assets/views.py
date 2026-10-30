@@ -1,34 +1,103 @@
-# Controllo "serve il login"
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-# get_object_or_404 cerca un oggetto e, se non esiste, mostra la pagina "non trovato"
-from django.shortcuts import get_object_or_404, render
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-# La tabella dei beni
-from .models import Asset
+from accounts.models import User
+from accounts.permissions import role_required
+
+from .forms import AssetCreateForm, AssetUpdateForm
+from .models import Asset, Movement
 
 
-# Elenco di tutti i beni: lo vedono tutti i ruoli, basta il login
 @login_required
 def asset_list(request):
-    # Chiede al database tutti i beni; select_related prende insieme anche
-    # categoria, luogo e responsabile, invece di fare una richiesta per ogni riga
     assets = Asset.objects.select_related("category", "location", "holder")
-    # Passa i beni al template con il nome "assets"
     return render(request, "assets/asset_list.html", {"assets": assets})
 
 
-# Scheda di un singolo bene; pk è il numero identificativo del bene, preso dall'indirizzo
 @login_required
 def asset_detail(request, pk):
-    # Cerca il bene con quel numero; se non esiste risponde 404
     asset = get_object_or_404(
         Asset.objects.select_related("category", "location", "holder"), pk=pk
     )
-    # Il suo storico: "movements" è il nome (related_name) dato nel modello Movement
     movements = asset.movements.select_related("user", "from_location", "to_location")
-    # Passa al template sia il bene sia lo storico
     return render(
         request,
         "assets/asset_detail.html",
         {"asset": asset, "movements": movements},
     )
+
+
+# Inserimento di un bene: solo gestore e amministratore
+@role_required(User.Role.MANAGER)
+def asset_create(request):
+    if request.method == "POST":
+        # Il modulo riceve i dati inviati dal browser
+        form = AssetCreateForm(request.POST)
+        # is_valid() esegue tutti i controlli (campi obbligatori, codice unico...)
+        if form.is_valid():
+            # atomic: o si salvano entrambe le righe, o nessuna
+            with transaction.atomic():
+                asset = form.save()
+                Movement.objects.create(
+                    asset=asset,
+                    user=request.user,
+                    action=Movement.Action.CREATED,
+                    to_location=asset.location,
+                )
+            messages.success(request, f"Bene «{asset.name}» inserito.")
+            # Dopo un salvataggio si reindirizza: ricaricare la pagina non reinvia il modulo
+            return redirect("asset_detail", pk=asset.pk)
+    else:
+        # Prima visita (GET): modulo vuoto
+        form = AssetCreateForm()
+    return render(request, "assets/asset_form.html", {"form": form, "title": "Nuovo bene"})
+
+
+# Modifica dei dati di un bene
+@role_required(User.Role.MANAGER)
+def asset_update(request, pk):
+    asset = get_object_or_404(Asset, pk=pk)
+    # Un bene dismesso è chiuso: non si modifica
+    if asset.status == Asset.Status.RETIRED:
+        messages.warning(request, "Un bene dismesso non può essere modificato.")
+        return redirect("asset_detail", pk=asset.pk)
+    if request.method == "POST":
+        # instance=asset dice che si modifica una riga esistente, non se ne crea una nuova
+        form = AssetUpdateForm(request.POST, instance=asset)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Modifiche salvate.")
+            return redirect("asset_detail", pk=asset.pk)
+    else:
+        # GET: il modulo parte già compilato con i dati attuali
+        form = AssetUpdateForm(instance=asset)
+    return render(
+        request,
+        "assets/asset_form.html",
+        {"form": form, "title": f"Modifica {asset.name}", "asset": asset},
+    )
+
+
+# Dismissione: il bene resta in archivio con tutto il suo storico
+@role_required(User.Role.MANAGER)
+@require_POST
+def asset_retire(request, pk):
+    asset = get_object_or_404(Asset, pk=pk)
+    if asset.status == Asset.Status.RETIRED:
+        messages.warning(request, "Il bene è già dismesso.")
+    else:
+        with transaction.atomic():
+            asset.status = Asset.Status.RETIRED
+            asset.holder = None
+            asset.save()
+            Movement.objects.create(
+                asset=asset,
+                user=request.user,
+                action=Movement.Action.RETIRED,
+                from_location=asset.location,
+            )
+        messages.success(request, f"Bene «{asset.name}» dismesso.")
+    return redirect("asset_detail", pk=asset.pk)

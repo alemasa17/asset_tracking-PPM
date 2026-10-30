@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Beni{% endblock %}
 {% block content %}
-  <h1 class="h3 mb-3">Beni</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Beni</h1>
+    {% if user.can_manage_inventory %}
+      <a class="btn btn-primary" href="{% url 'asset_create' %}">Nuovo bene</a>
+    {% endif %}
+  </div>
   {# table-responsive: la tabella scorre di lato sugli schermi piccoli #}
   <div class="table-responsive">
     <table class="table table-hover align-middle">

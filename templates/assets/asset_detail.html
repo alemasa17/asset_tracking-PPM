@@ -9,6 +9,16 @@
       <h1 class="h4">{{ asset.name }} {% include "assets/_status_badge.html" %}</h1>
       <p class="text-muted mb-3">{{ asset.inventory_code }}</p>
       <dl class="row mb-0">
+              {% if user.can_manage_inventory and asset.status != "retired" %}
+        <div class="mt-3 d-flex gap-2">
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'asset_update' asset.pk %}">Modifica</a>
+          <form method="post" action="{% url 'asset_retire' asset.pk %}"
+                onsubmit="return confirm('Dismettere questo bene? Dal sito non si può annullare.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">Dismetti</button>
+          </form>
+        </div>
+      {% endif %}
         <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ asset.category }}</dd>
         <dt class="col-sm-3">Luogo</dt><dd class="col-sm-9">{{ asset.location }}</dd>
         <dt class="col-sm-3">Responsabile</dt><dd class="col-sm-9">{{ asset.holder|default:"—" }}</dd>

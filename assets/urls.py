@@ -11,3 +11,11 @@ urlpatterns = [
     # "/beni/3/" mostra la scheda del bene numero 3; <int:pk> cattura il numero
     path("beni/<int:pk>/", views.asset_detail, name="asset_detail"),
 ]
+
+urlpatterns = [
+    path("beni/", views.asset_list, name="asset_list"),
+    path("beni/nuovo/", views.asset_create, name="asset_create"),
+    path("beni/<int:pk>/", views.asset_detail, name="asset_detail"),
+    path("beni/<int:pk>/modifica/", views.asset_update, name="asset_update"),
+    path("beni/<int:pk>/dismetti/", views.asset_retire, name="asset_retire"),
+]
