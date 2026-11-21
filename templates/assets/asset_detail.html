@@ -3,35 +3,51 @@
 {% block content %}
   <a href="{% url 'asset_list' %}" class="text-decoration-none">&larr; Tutti i beni</a>
 
-  {# Scheda con i dati del bene #}
   <div class="card mt-3 mb-4">
     <div class="card-body">
       <h1 class="h4">{{ asset.name }} {% include "assets/_status_badge.html" %}</h1>
       <p class="text-muted mb-3">{{ asset.inventory_code }}</p>
       <dl class="row mb-0">
-              {% if user.can_manage_inventory and asset.status != "retired" %}
-        <div class="mt-3 d-flex gap-2">
-          <a class="btn btn-outline-primary btn-sm" href="{% url 'asset_update' asset.pk %}">Modifica</a>
-          <form method="post" action="{% url 'asset_retire' asset.pk %}"
-                onsubmit="return confirm('Dismettere questo bene? Dal sito non si può annullare.');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger btn-sm">Dismetti</button>
-          </form>
-        </div>
-      {% endif %}
         <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ asset.category }}</dd>
         <dt class="col-sm-3">Luogo</dt><dd class="col-sm-9">{{ asset.location }}</dd>
         <dt class="col-sm-3">Responsabile</dt><dd class="col-sm-9">{{ asset.holder|default:"—" }}</dd>
-        {# date formatta la data come giorno/mese/anno #}
         <dt class="col-sm-3">Acquistato il</dt>
         <dd class="col-sm-9">{{ asset.purchase_date|date:"d/m/Y"|default:"—" }}</dd>
         <dt class="col-sm-3">Descrizione</dt>
         <dd class="col-sm-9">{{ asset.description|default:"—" }}</dd>
       </dl>
+
+      {% if asset.status != "retired" %}
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          {% if asset.status == "available" %}
+            <form method="post" action="{% url 'asset_checkout' asset.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-sm">Prendi in carico</button>
+            </form>
+          {% elif asset.holder_id == user.id or user.can_manage_inventory %}
+            <form method="post" action="{% url 'asset_return' asset.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success btn-sm">Restituisci</button>
+            </form>
+          {% endif %}
+
+          {% if asset.status == "available" or asset.holder_id == user.id or user.can_manage_inventory %}
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset_move' asset.pk %}">Sposta</a>
+          {% endif %}
+
+          {% if user.can_manage_inventory %}
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'asset_update' asset.pk %}">Modifica</a>
+            <form method="post" action="{% url 'asset_retire' asset.pk %}"
+                  onsubmit="return confirm('Dismettere questo bene? Dal sito non si può annullare.');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm">Dismetti</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
   </div>
 
-  {# Storico dei movimenti, dal più recente #}
   <h2 class="h5">Storico</h2>
   <div class="table-responsive">
     <table class="table table-sm">
